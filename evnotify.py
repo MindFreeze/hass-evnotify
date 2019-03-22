@@ -1,3 +1,5 @@
+import voluptuous as vol
+
 from homeassistant.helpers.entity import Entity
 from homeassistant.components.sensor import PLATFORM_SCHEMA
 import homeassistant.helpers.config_validation as cv
@@ -17,14 +19,14 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
 class EVNotify(Entity):
     """Representation of a Sensor."""
 
-    def __init__(self, akey, pass):
+    def __init__(self, akey, password):
         """Initialize the sensor."""
         import requests
 
         self._state = None
         self.RESTURL = 'https://app.evnotify.de/'
         self.session = requests.Session()
-        self.login(akey, pass)
+        self.login(akey, password)
 
     @property
     def name(self):
@@ -32,17 +34,36 @@ class EVNotify(Entity):
         return 'EVNotify SOC'
 
     @property
+    def unit_of_measurement(self):
+        """Return the unit_of_measurement of the device."""
+        return '%'
+
+    @property
+    def icon(self):
+        """Icon to use in the frontend, if any."""
+        return 'mdi:battery'
+
+    @property
     def state(self):
         """Return the state of the sensor."""
-        return self._state
+        return self._state['soc_display']
+
+    @property
+    def device_state_attributes(self):
+        """Return the devices' state attributes."""
+        from datetime import datetime
+
+        attrs = {
+            'battery_level': self._state['soc_bms'],
+            'last_seen': datetime.fromtimestamp(self._state['last_soc']).strftime('%Y-%m-%d %H:%M:%S')
+        }
+        return attrs
 
     def update(self):
         """Fetch new state data for the sensor.
-
         This is the only method that should fetch new data for Home Assistant.
         """
-        data = self.getSOC()
-        self._state = data['soc_display']
+        self._state = self.getSOC()
 
     def login(self, akey, password):
         self.token = self.sendRequest('post', 'login', False, {
