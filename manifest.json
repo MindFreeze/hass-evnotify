@@ -1,0 +1,9 @@
+{
+  "version": "1.0.0",
+  "domain": "evnotify",
+  "name": "EVNotify SOC",
+  "documentation": "https://github.com/home-assistant/example-custom-config/tree/master/custom_components/example_sensor/",
+  "dependencies": [],
+  "codeowners": [],
+  "requirements": ["requests"]
+}
